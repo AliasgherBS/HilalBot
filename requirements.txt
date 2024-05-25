@@ -59,7 +59,6 @@ pydeck==0.8.1b0
 python-docx==1.1.0
 python-dotenv==1.0.0
 pytz==2023.3.post1
-pywin32==305.1
 PyYAML==6.0.1
 referencing==0.32.0
 regex==2023.12.25

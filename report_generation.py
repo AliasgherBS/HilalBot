@@ -4,9 +4,7 @@ import json
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
 
-
 from bs4 import BeautifulSoup
-
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts.chat import (

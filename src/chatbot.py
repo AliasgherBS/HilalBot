@@ -2,7 +2,7 @@ import re
 import os
 from langchain_community.document_loaders import Docx2txtLoader
 from langchain.schema import Document
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 # from langchain.chains.question_answering import load_qa_chain
@@ -15,8 +15,10 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import AIMessage, HumanMessage
 
-load_dotenv()
-openai_key = os.getenv('OPENAI_KEY')
+# load_dotenv()
+# openai_key = os.getenv('OPENAI_KEY')
+
+openai_key = 'sk-proj-LaTBOgFRhx7cbb8iGcltT3BlbkFJfmMUyCI2Y1jSavxlaZSo'
 
 
 # Define the function to process each file
