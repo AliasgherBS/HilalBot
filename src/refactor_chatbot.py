@@ -27,7 +27,8 @@ class CryptoChatbot:
                 '24 Tokens Review Reports.docx',
                 '45 Tokens Review Reports.docx',
                 '50 Token Review Reports.docx',
-                '52Tokens Review Reports.docx'
+                '52Tokens Review Reports.docx',
+                'Conceptual Data.docx'
             ]
 
             # Process each file
@@ -45,7 +46,7 @@ class CryptoChatbot:
             return report_db
         else:
             # Load existing vector store
-            return FAISS.load_local(self.report_db_path, self.embeddings, allow_dangerous_deserialization=True)
+            return FAISS.load_local(self.report_db_path, self.embeddings)
 
     def process_file(self, file_path):
         """
@@ -131,7 +132,7 @@ class CryptoChatbot:
                 # Prompt for the QA system
                 qa_system_prompt = """You are a virtual assistant specializing in Crypto Currencies.\
                     Use the following pieces of retrieved context to answer the question.\
-                    If you don't know the answer, provide a summary of the context. Do not generate your answer.\
+                    If you don't know the answer, just say 'I do not know'. Do not generate new knowledge.\
 
                     {context}"""
 
@@ -166,6 +167,8 @@ class CryptoChatbot:
                 ai_msg = rag_chain.invoke({"question": question, "chat_history": chat_history})
                 chat_history.extend([HumanMessage(content=question), ai_msg])
                 return ai_msg
+            else:
+                return "I do not know"
         except Exception as e:
             print(f"Error in chat: {e}")
             return "An error occurred while processing your request.", "pass"
