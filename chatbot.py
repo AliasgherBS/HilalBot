@@ -24,11 +24,11 @@ class CryptoChatbot:
         if not os.path.exists(self.report_db_path):
             # File names to process
             file_names = [
-                '24 Tokens Review Reports.docx',
-                '45 Tokens Review Reports.docx',
-                '50 Token Review Reports.docx',
-                '52Tokens Review Reports.docx',
-                'Conceptual Data.docx'
+                'data/24 Tokens Review Reports.docx',
+                'data/45 Tokens Review Reports.docx',
+                'data/50 Token Review Reports.docx',
+                'data/52Tokens Review Reports.docx',
+                'data/Conceptual Data.docx'
             ]
 
             # Process each file
@@ -175,7 +175,7 @@ class CryptoChatbot:
 
 
 def main():
-    openai_key = 'sk-proj-LaTBOgFRhx7cbb8iGcltT3BlbkFJfmMUyCI2Y1jSavxlaZSo'
+    openai_key = 'open-ai key'
 
     chatbot = CryptoChatbot(openai_key)
     user_input = input("Ask me about crypto protocols: ")

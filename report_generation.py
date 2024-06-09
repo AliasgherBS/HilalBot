@@ -1,204 +1,142 @@
-import os
 import requests
-import json
-from dotenv import load_dotenv
-from urllib.parse import quote_plus
-
 from bs4 import BeautifulSoup
-
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_core.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
 from langchain_openai import ChatOpenAI
 
-# Load environment variables
-load_dotenv()
+class CryptoAssistant:
+    def __init__(self):
+        self.openai_key = 'open-ai key'
+        self.bing_api_key = 'bing key'
+        self.bing_search_url = 'https://api.bing.microsoft.com/v7.0/search'
 
-# OpenAI API Key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    def bing_search(self, query, count=2):
+        headers = {"Ocp-Apim-Subscription-Key": self.bing_api_key}
+        params = {"q": query, "count": count}
+        response = requests.get(self.bing_search_url, headers=headers, params=params)
+        response.raise_for_status()
+        search_results = response.json()
+        urls = [result["url"] for result in search_results.get("webPages", {}).get("value", [])]
+        return urls
 
+    def gather_information(self, urls):
+        official_site_text = ""
+        whitepaper_text = ""
+        for url in urls:
+            text = self.scrape_website(url)
+            if "whitepaper" in url.lower():
+                whitepaper_text += text
+            else:
+                official_site_text += text
+        return official_site_text, whitepaper_text
 
-# Bing Search API Key
-
-# BING_API_KEY1 = "a50791a745ca4ac5b0f4006c31b8841f"
-
-BING_API_KEY = os.getenv("BING_API_KEY1")
-if not BING_API_KEY:
-    raise ValueError('AZURE_SUBSCRIPTION_KEY is not set.')
-
-# Setup for Bing Web Search API
-BING_SEARCH_URL = 'https://api.bing.microsoft.com/v7.0/search?'
-
-
-# url = 'https://api.bing.microsoft.com/v7.0/search?' #  + 'q=' + searchTerm + '&' + 'customconfig=' + custom_config_id
-
-# # OpenAI Model Configuration
-# base_model = "gpt-4-1106-preview"
-# max_tokens = 7000 
-# temperature = 0.2
-
-
-
-# Initialize session for HTTP requests
-session = requests.Session()
-
-def perform_web_search(query):
-    """Perform a web search using Bing Search API and return results."""
-    headers = {'Ocp-Apim-Subscription-Key': BING_API_KEY}
-    params = {'q': quote_plus(query)}
-    response = session.get(BING_SEARCH_URL, headers=headers, params=params)
-    
-    
-    response.raise_for_status()
-    search_results = response.json()
-    
-    pages = search_results['webPages']
-    results = pages['value']
-    
-    for result in results[:1]:
-        response = requests.get(result['url'])
+    def scrape_website(self, url):
+        if not url:
+            return ''
+        response = requests.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
         text = soup.find('body').get_text().strip()
-        cleaned_text = ' '.join(text.split('\n'))
         cleaned_text = ' '.join(text.split())
-    
-#     return response.json()
-    return cleaned_text
+        return cleaned_text
 
-def gather_information(token):
-    """Gather information about a cryptocurrency from various sources."""
-    # Example implementation; details depend on specific requirements
-#     search_queries = [f"{token} cryptocurrency official website", f"coinmarketcap {token}", f"coingecko {token}"] #, f"{token} cryptocurrency whitepaper"
-    search_queries = [f"{token} cryptocurrency official website"]
-    results = []
-    for query in search_queries:
-        results.append(perform_web_search(query))
-    return results
+    def analyze_with_openai(self, prompt):
+        chat = ChatOpenAI(model="gpt-4-0125-preview", temperature=0.1, openai_api_key=self.openai_key)
+        messages = [
+            SystemMessage(content="You are a virtual assistant specializing in Crypto Currencies."),
+            HumanMessage(content=prompt)
+        ]
+        return chat.invoke(messages).content
 
+    def analyze_documents_and_generate_report(self, documents):
+        prompt = f"""
+Your mission is to analyze and assess cryptocurrency protocols, projects, and their associated coins or tokens from a Shariah compliance perspective. As Crypto Shariah Bot, you'll perform two key tasks:
+Gather information: Use various reliable sources like official websites, documentation, CoinMarketCap, CoinGecko, and other relevant internet resources to comprehensively understand the specific protocol, project, coin, or token. Prioritize official documents like whitepapers, Gitbooks, and blogs for in-depth analysis.
+Analyze for Shariah compliance: Apply Shariah principles to assess the protocol and token's compliance. Focus on key aspects like the platform's nature, the coin's Islamic legal characterization, and potential violations of Shariah prohibitions, including interest (usury), gambling, excessive uncertainty, and unethical activities.
+Step into your analytical role and assess the Shariah compliance of the crypto protocol, project, and its coin or token. Prioritize the following key areas:
 
-def analyze_with_openai(prompt):
-    """Use OpenAI to analyze text and return the response."""
-    
-    chat = ChatOpenAI(model="gpt-4-0125-preview",temperature=0.1, openai_api_key=OPENAI_API_KEY)
-    
-    messages = [
-    SystemMessage(
-        content="You are a virtual assistant specializing in Crypto Currencies."
-    ),
-    HumanMessage(
-        content=prompt
-    ),
-    ]
-    
-    
-    return chat.invoke(messages).content
-    
-    
-#     data = {
-#         "model": "gpt-4-0125-preview",
-#         "prompt": prompt,
-#         "max_tokens": 4000,
-#         "messages": [
-#             {
-#                 "role": "system",
-#                 "content": "You are a virtual assistant specializing in Crypto Currencies. Make sure to use accurate information from the knowledge base provided in context"
-#             },
-#             {
-#                 "role": "user",
-#                 "content": prompt
-#             }
-#         ],
-#         "temperature": 0.1,
-#         "top_p": 1,
-#         "frequency_penalty": 0,
-#         "presence_penalty": 0
-#     }
-#     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
-#     try:
-#         response = requests.post("https://api.openai.com/v1/completions", json=data, headers=headers)
-#         return response.json()
-#     except requests.exceptions.RequestException as e:
-#         return {"error": str(e)}
+Nature of the platform or protocol: Analyze the protocol's core functions, purpose, and technical design. Evaluate if its functionalities inherently conflict with or align with Shariah principles.
+Islamic legal characterization of the coin/token: Determine the coin/token's nature within the protocol's ecosystem. Identify its primary usage and functions and assess their compatibility with Islamic legal principles. If multiple tokens exist, analyze each separately.
+Prohibited elements: Scrutinize for potential violations of core Shariah prohibitions:
+Interest (usury): Investigate if the protocol or token inherently generates or involves interest-based transactions.
+Gambling or lottery: Assess if any features or functionalities promote gambling-like activities or operate under similar principles.
+Excessive uncertainty (Gharar): Analyze if the protocol or token introduces excessive uncertainty that goes beyond normal market volatility.
+Other prohibited elements: Examine for involvement in activities deemed unethical or immoral under Islamic law, such as those mentioned in the prompt previously.
+General Instructions:
+Transparency & Clarity: Empower users with clear verdicts, guidance, and reasoning based on Shariah principles.
+User Responsibility: Emphasize responsible usage for maintaining Shariah compliance.
+Specificity & Clarity: Precisely identify the analyzed subject and use unambiguous language.
+Context & Objectivity: Consider broader Shariah and technical contexts while maintaining neutral analysis.
+Technical Expertise: Utilize blockchain understanding and accurate terminology.
+Report Focus & Shariah Relevance: Prioritize analysis relevant to the Shariah review report format.
+Conciseness & Scholarly Reference: Maintain clarity and support analysis with relevant Shariah rulings/opinions.
+Create your response according to a standard and specific template. Here is the standard template for the Shariah Review Report as follows.
 
-
-
-def analyze_documents_and_report_generation(documents):
-    """Analyze cryptocurrency documents from a Shariah perspective."""
-    # Placeholder for actual implementation
-    analysis_results = []
-    for doc in documents:
-        # Assume `doc` contains necessary information to be sent to OpenAI for analysis
-        prompt = f"""Analyze this document provided and draft a report of the discussed token: {doc}.
-        
-Example of some token reports is given below:
-        
-1. Name of the Protocol: ROSE
-1.1. Main Function of the Protocol and Token: 
-The Oasis network platform is a layer one blockchain Proof of Stake smart contract platform that provides scalability, extensibility, and privacy. The main feature of the platform enables efficient verifiable and confidential smart contract execution. It aims to achieve this goal by separating its consensus layer from its layer of contract execution while providing a built-in interface connecting the two for privacy-preserving computation. The consensus layer acts as a hub that uses a Proof-of-Stake (PoS) mechanism to secure the network and reach a consensus on transaction validity. The execution layer consists of multiple, parallel runtimes (called ParaTimes) for specialized computation needs that each plug into the consensus layer. 
-To access the Oasis Network functions you need to have the ROSE token in your possession. ROSE is used for transaction fees, staking, and delegation at the consensus layer. By staking or staking ROSE, users can secure the Oasis blockchain and earn rewards.
-1.2. Shariah Description of the Protocol and Token: 
-The Oasis Network is a neutral platform to develop dApps that can be used for halal and haram purposes. The main objective of the platform is to bring more privacy to the users of blockchain. 
-The native token ROSE is a hybrid token that can be used as a means of payment and to unlock some utilities. 
-1.3. Shariah Opinion of the Protocol and Token: 
-There was no shariah issues found at this stage with using the platform and the token in a halal manner. 
-
-
-
-2. Name of the Protocol: RADIX
-2.1. Main Function of the Protocol and Token: 
-Radix is a publicly accessible and decentralized ledger specifically designed to facilitate the development of decentralized applications, particularly those related to decentralized finance (DeFi). By utilizing Radix's comprehensive layer-1 protocol, developers can build these applications without worrying about potential vulnerabilities such as smart contract hacks, exploits, or network congestion.
-Radix is building an open, interconnected platform where the full range of powerful DeFi applications will be built securely and safely.
-•	Stable Coins
-•	Collateralized Lending
-•	Perpetual Futures
-•	Decentralized Exchanges
-•	Wallets & Dashboards
-•	Money Markets
-•	Yield Farming
-•	Options & Derivatives
-•	NFTs
-•	Gaming
-•	DeFi Insurance
-•	Portfolio Management
-The native crypto currency of the Radix network is called RADIX (XRD) and is required for securing the network via staking, accessing DeFi, deploying smart contracts and paying for transactions.
-2.2. Shariah Description of the Protocol and Token:
-Radix is a layer one platform with the aim of facilitating the development of fintech on the blockchain. This includes many aspects of haram activities such as derivatives, futures, gaming etc. 
-The token is a payment token within the ecosystem.
-2.3. Shariah Opinion of the Protocol and Token: 
-Because of the nature of the activities that Radix is facilitating, the protocol will not be considered as shariah compliant including its native token.
-
-
-
-3. Name of the Protocol: KOINOS
-3.1. Main Function of the Protocol and Token: 
-Koinos is a blockchain-based decentralized network that aims to create a fee-less and accessible environment for decentralized applications (dApps). It introduces a unique mechanism called "Mana" to dynamically price network resources based on opportunity cost, allowing for free-to-use applications. The consensus algorithm, known as proof-of-burn, maximizes efficiency, decentralization, and egalitarianism while deterring attacks and spam. Koinos utilizes a modular upgradeability approach for seamless and fork-less upgrades. The goal is to provide a user-friendly and truly decentralized blockchain framework that empowers developers and maximizes accessibility for end-users, developers, and node operators.
-KOIN is the native token of the Koinos blockchain network and serves several purposes within the ecosystem:
-•	Means of exchange
-•	Voting rights
-•	Earning MANA power
-3.2. Shariah Description of the Protocol and Token:
-Koinos is a neutral platform with the aim of bringing more people to use blockchain technology. In that sense, it can accommodate halal and haram activities. However, it seems that its main objective is to serve Web3 gaming, Defi, and social apps. This may raise some concerns from the shariah perspective.
-The KOIN token is a hybrid token that can be used for payment as well as access to utilities such as governance right.
-3.3. Shariah Opinion of the Protocol and Token: 
-If the platform is used in a shariah compliant manner along with the token, then there might be no issues. However, it is better to avoid this protocol and token due its focus on gaming and Defi.
-
+#Section 1: Main Functions of the Protocol and Token
+##1. Protocol Overview:
+[Define and explain the protocol's primary functions and objectives. Briefly describe its technical design and mechanics, using layman's terms where possible.]
+[Identify and describe the main products offered by the protocol based on official sources like its website, documents, whitepaper, and internet resources.]
+##2. Token Analysis:
+[Explain the main functions and use cases of the coin/token within the protocol's ecosystem. Focus on its primary purpose and usage patterns.]
+[If multiple tokens exist, clearly differentiate and describe each one's purpose and functionalities within the ecosystem.]
+#Section 2: Islamic Legal Analysis of the Protocol and Token
+[Focus: Examine the protocol and token from Islamic legal (Shariah) perspective to determine their compliance with core Shariah principles.
+Analysis Areas:]
+##Shariah Nature of the Platform/Protocol:
+[Analyze the protocol's core functions and operations through the lens of Shariah law. Identify potential conflicts or alignment with key Islamic principles.
+Cite relevant Shariah rulings or scholarly opinions to support your analysis.]
+##Islamic Legal Characterization of the Coin/Token:
+[Define the legal nature of the coin/token within the protocol's ecosystem. Assess whether it can be considered a valid asset (مال متقوم) and a subject of Shariah-compliant transactions.
+Analyze if the token functions solely as a currency (payment) token, utility token or holds additional financial characteristics like security tokens.]
+##Examination of Prohibited Elements:
+[Scrutinize for potential violations of core Shariah prohibitions, focusing on:]
+**Interest (usury):** [Investigate if the protocol or token inherently generates or facilitates interest-based transactions (Riba).]
+**Gambling or lottery (Qimar or Maysir):** [Assess if any features or functionalities promote gambling-like activities or operate under similar principles.]
+**Excessive Uncertainty (Gharar):** [Analyze if the protocol or token introduces excessive uncertainty that goes beyond normal market volatility (Gharar). Consider factors like algorithmic manipulation, opaque functionalities, and reliance on external factors.]
+**Other Prohibited Elements:** [Examine for involvement in activities deemed unethical or immoral under Islamic law (e.g., pornography, tobacco, pork, weapon industry).]
+#Section 3: Shariah Compliance Verdict and Guidance
+##Verdict:
+[After analyzing the protocol and token from a Shariah perspective, deliver a clear and concise verdict on their overall compliance:
+Shariah-compliant: If the protocol and token align with core Shariah principles, declare them permissible for use under specific conditions (e.g., adherence to ethical trading practices).
+Non-Shariah-compliant: If significant violations of Shariah principles are identified, declare them impermissible for use (Haram).
+Conditional Compliance: If compliance depends on specific usage conditions or platform modifications, explain these conditions clearly and emphasize user responsibility.]
+##Guidance:
+[Beyond the verdict, provide actionable guidance for users:
+Shariah-compliant: Briefly outline permitted usage scenarios and highlight user responsibilities to maintain compliance (e.g., avoiding certain trading strategies).
+Non-Shariah-compliant: Encourage users to avoid the protocol and token.
+Conditional Compliance: Clearly explain the necessary conditions for Shariah-compliant usage and emphasize user vigilance in monitoring adherence to these conditions.]
+##Disclaimer:
+[Include a disclaimer clarifying the scope of the review:
+It solely focuses on the overall Shariah compliance of the protocol and its associated coin/token.
+It does not extend to the Shariah implications of specific products, utilities, or services offered by the protocol unless explicitly analyzed.
+Users are advised to exercise their own judgment or seek separate guidance for Shariah compliance of specific features or services.]
 
 Note: Make sure to use accurate information from the knowledge base provided in context and DON'T makeup response from your own knowledge and there is no need for conclusion section.
-"""
-        analysis_results.append(analyze_with_openai(prompt))
-    return analysis_results[0]
 
+Analyze this document provided and draft a report of the discussed token: {documents}
+"""
+        return self.analyze_with_openai(prompt)
 
 def main():
-    # Example usage
-    token = input("Please provide a token for generating a Shariah compliance report: ")
-    documents = gather_information(token)
-#     print(documents)
-    report = analyze_documents_and_report_generation(documents)
-    print(report)
+    assistant = CryptoAssistant()
+    token = input("Please provide a token for generating a Shariah compliance report: ").lower()
+    
+    # Search for the official website and relevant pages using Bing
+    search_queries = [
+        f"{token} official website",
+        f"{token} CoinMarketCap",
+        f"{token} CoinGecko"
+    ]
+    
+    urls = []
+    for query in search_queries:
+        urls.extend(assistant.bing_search(query))
+    
+    if not urls:
+        print("This token does not exist in the database.")
+        return
+
+    # documents = assistant.gather_information(urls)
+    # report = assistant.analyze_documents_and_generate_report(documents)
+    print(urls)
 
 if __name__ == "__main__":
     main()
