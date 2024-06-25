@@ -175,8 +175,7 @@ class CryptoChatbot:
 
 
 def main():
-    openai_key = 'open-ai key'
-
+    openai_key = 'sk-proj-ZmYmPcCY8aEZUIY2kK4cT3BlbkFJ5hAwKhZNHI4s433PmlUB'
     chatbot = CryptoChatbot(openai_key)
     user_input = input("Ask me about crypto protocols: ")
     response = chatbot.chat(user_input)
