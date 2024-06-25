@@ -1,5 +1,7 @@
 import re
 import os
+import speech_recognition as sr
+import pyttsx3
 from langchain_community.document_loaders import Docx2txtLoader
 from langchain.schema import Document
 from langchain_openai import OpenAIEmbeddings
@@ -16,6 +18,12 @@ class CryptoChatbot:
         self.report_db_path = report_db_path
         self.embeddings = OpenAIEmbeddings(model='text-embedding-3-small', openai_api_key=openai_key)
         self.report_db = self._initialize_report_db()
+        self.chat_history = []  # Initialize chat history
+
+        # Initialize text-to-speech engine
+        self.tts_engine = pyttsx3.init()
+        self.tts_engine.setProperty('rate', 150)  # Speed of speech
+        self.tts_engine.setProperty('volume', 0.9)  # Volume level
 
     def _initialize_report_db(self):
         """
@@ -162,25 +170,57 @@ class CryptoChatbot:
                 )
 
                 question = user_input
-                chat_history = []
 
-                ai_msg = rag_chain.invoke({"question": question, "chat_history": chat_history})
-                chat_history.extend([HumanMessage(content=question), ai_msg])
+                ai_msg = rag_chain.invoke({"question": question, "chat_history": self.chat_history})
+                self.chat_history.extend([HumanMessage(content=question), ai_msg])
                 return ai_msg
             else:
                 return "I do not know"
         except Exception as e:
             print(f"Error in chat: {e}")
-            return "An error occurred while processing your request.", "pass"
+            return "An error occurred while processing your request."
 
+    def speak(self, text):
+        """
+        Convert text to speech.
+        """
+        self.tts_engine.say(text)
+        self.tts_engine.runAndWait()
+
+    def listen(self):
+        """
+        Listen to audio input and convert it to text.
+        """
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
+            print("Listening...")
+            audio = recognizer.listen(source)
+
+        try:
+            user_input = recognizer.recognize_google(audio)
+            print(f"User said: {user_input}")
+            return user_input
+        except sr.UnknownValueError:
+            print("Google Speech Recognition could not understand audio")
+            return None
+        except sr.RequestError as e:
+            print(f"Could not request results from Google Speech Recognition service; {e}")
+            return None
 
 def main():
-    openai_key = 'open-ai key'
-
+    openai_key = 'sk-proj-ZmYmPcCY8aEZUIY2kK4cT3BlbkFJ5hAwKhZNHI4s433PmlUB'
     chatbot = CryptoChatbot(openai_key)
-    user_input = input("Ask me about crypto protocols: ")
-    response = chatbot.chat(user_input)
-    print(response)
+
+    while True:
+        print("Say something (or type 'exit' to quit): ")
+        user_input = chatbot.listen()
+        if user_input is None:
+            continue
+        if user_input.lower() == 'exit':
+            break
+        response = chatbot.chat(user_input)
+        print(response)
+        chatbot.speak(response)
 
 if __name__ == "__main__":
     main()

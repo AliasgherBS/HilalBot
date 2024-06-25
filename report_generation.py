@@ -5,8 +5,8 @@ from langchain_openai import ChatOpenAI
 
 class CryptoAssistant:
     def __init__(self):
-        self.openai_key = 'open-ai key'
-        self.bing_api_key = 'bing key'
+        self.openai_key = 'sk-proj-ZmYmPcCY8aEZUIY2kK4cT3BlbkFJ5hAwKhZNHI4s433PmlUB'
+        self.bing_api_key = '8ac0c39f59b044a58a91f6ab90eb21f1'
         self.bing_search_url = 'https://api.bing.microsoft.com/v7.0/search'
 
     def bing_search(self, query, count=2):
@@ -121,9 +121,9 @@ def main():
     
     # Search for the official website and relevant pages using Bing
     search_queries = [
-        f"{token} official website",
-        f"{token} CoinMarketCap",
-        f"{token} CoinGecko"
+        # f"{token} official website",
+        f"{token} CoinMarketCap"
+        # f"{token} CoinGecko"
     ]
     
     urls = []
@@ -134,9 +134,9 @@ def main():
         print("This token does not exist in the database.")
         return
 
-    # documents = assistant.gather_information(urls)
-    # report = assistant.analyze_documents_and_generate_report(documents)
-    print(urls)
+    documents = assistant.gather_information(urls)
+    report = assistant.analyze_documents_and_generate_report(documents)
+    print(report)
 
 if __name__ == "__main__":
     main()
