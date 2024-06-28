@@ -4,3 +4,6 @@ langchain_openai
 faiss-cpu
 docx2txt
 requests
+SpeechRecognition
+pyttsx3
+pyaudio

@@ -1,0 +1,86 @@
+# Shariah Review Report on Velo (VELO)
+
+## Section 1: Main Functions of the Protocol and Token
+
+### 1. Protocol Overview:
+Velo Labs is developing a federated credit exchange network, underpinned by the Velo Protocol. This protocol is a blockchain financial protocol designed to facilitate digital credit issuance 
+and borderless asset transfers for businesses through a smart contract system. It leverages the Stellar Consensus Protocol for transaction processing and settlement, aiming to enable partners to transfer value securely, transparently, and efficiently. The core mission of Velo Labs is to allow for the safe and timely transfer of value between partners, supporting various business 
+use cases centered around the issuance of collateral-backed digital credits corresponding to fiat currencies.
+
+### 2. Token Analysis:
+The VELO token serves as the primary utility token within the Velo ecosystem. It acts as collateral and is required for participation in the ecosystem's activities. The VELO token underpins the financial transactions on the Velo network, facilitating value transfer and stable settlements. Its usage is integral to the operation of the Velo Protocol, which aims at enabling a wide range of financial services including digital credit issuance and cross-border asset transfers.
+
+## Section 2: Islamic Legal Analysis of the Protocol and Token
+
+### Shariah Nature of the Platform/Protocol:
+The Velo Protocol's core functionality of issuing collateral-backed digital credits for fiat currencies aligns with Shariah principles that emphasize asset-backed financial transactions to avoid Riba (usury). The protocol facilitates value transfer without engaging in interest-based activities, focusing on real economic activities and asset transfers, which is permissible in Islamic finance.
+
+### Islamic Legal Characterization of the Coin/Token:
+The VELO token, functioning primarily as a utility token within the Velo ecosystem, can be considered a valid asset (مال متقوم) as it represents a stake in the ecosystem and is used as collateral. Its primary function does not revolve around serving as a currency or speculative asset but rather supports the operational aspects of the Velo Protocol, aligning with the concept of utility tokens in Islamic finance.
+
+### Examination of Prohibited Elements:
+- **Interest (usury):** The Velo Protocol and VELO token do not inherently generate or facilitate interest-based transactions, adhering to the prohibition of Riba.
+- **Gambling or lottery (Qimar or Maysir):** There is no indication that the Velo ecosystem promotes gambling-like activities or operates under similar principles.
+- **Excessive Uncertainty (Gharar):** While all cryptocurrencies involve some level of market volatility, the Velo Protocol's focus on digital credit issuance and asset transfers does not introduce excessive uncertainty in transactions, thus minimizing Gharar.
+- **Other Prohibited Elements:** Based on available information, there is no involvement in activities deemed unethical or immoral under Islamic law.
+
+## Section 3: Shariah Compliance Verdict and Guidance
+
+### Verdict:
+The Velo Protocol and its associated VELO token are deemed Shariah-compliant under specific conditions. Their core operations and functionalities do not violate key Shariah principles, focusing on asset-backed and real economic activities without engaging in Riba, Gharar, Maysir, or Haram activities.
+
+### Guidance:
+For users engaging with the Velo ecosystem:
+- Ensure that participation and transactions within the Velo ecosystem remain free from Riba, Gharar, and Maysir.
+- Monitor the usage of VELO tokens to ensure that they are employed in a manner consistent with Islamic finance principles, particularly avoiding speculative practices that could introduce excessive uncertainty or gambling-like activities.
+
+### Disclaimer:
+This review focuses solely on the Shariah compliance of the Velo Protocol and VELO token based on available information. It does not extend to the Shariah implications of specific products, utilities, or services offered by the protocol unless explicitly analyzed. Users are advised to exercise their own judgment or seek separate guidance for Shariah compliance of specific features or services.
+
+
+
+
+
+
+
+
+Given the extensive information provided, a comprehensive Shariah Review Report on zkSync and its ecosystem is outlined below:
+
+# Section 1: Main Functions of the Protocol and Token
+
+## 1. Protocol Overview:
+zkSync is a Layer-2 scaling solution for Ethereum, utilizing zero-knowledge rollups (zk-rollups) to enhance transaction throughput while ensuring security and decentralization. Its primary function is to address the scalability issues of the Ethereum blockchain by batching multiple transactions into a single transaction on the Ethereum mainnet, significantly reducing gas fees and increasing transaction speed. zkSync aims to preserve Ethereum's foundational values of freedom, self-sovereignty, and decentralization at scale.
+
+## 2. Token Analysis:
+As of the last update, zkSync does not have a native token. However, there are plans for a zkSync native token to be used for staking and becoming a validator in the zkSync network. This future token is anticipated to play a crucial role in the governance and operational aspects of the zkSync ecosystem.
+
+# Section 2: Islamic Legal Analysis of the Protocol and Token
+
+## Shariah Nature of the Platform/Protocol:
+zkSync's core functions and operations, based on zero-knowledge proofs, do not inherently conflict with Shariah principles. The technology enables secure and private transactions without revealing transaction details, aligning with the principles of financial privacy in Islamic finance. Furthermore, the protocol's aim to enhance scalability and reduce costs for users without compromising on security or decentralization is in line with the Islamic economic principles of efficiency and equity.
+
+## Islamic Legal Characterization of the Coin/Token:
+Since zkSync does not currently have a native token, the Islamic legal characterization cannot be fully assessed. However, any future token, as described, would likely serve as a utility and 
+governance token within the zkSync ecosystem. Its Shariah compliance would depend on its specific use cases, including whether it facilitates or represents ownership in Shariah-compliant assets or services, and does not entail prohibited activities.
+
+## Examination of Prohibited Elements:
+**Interest (usury):** There is no indication that zkSync or its anticipated token inherently generates or facilitates interest-based transactions. The protocol's operations focus on transaction batching and scalability improvements.
+
+**Gambling or lottery (Qimar or Maysir):** zkSync's documentation does not suggest any features or functionalities that promote gambling-like activities.
+
+**Excessive Uncertainty (Gharar):** While all investments carry some level of risk, zkSync's technology aims to reduce uncertainty and risk associated with transaction speeds and costs on the Ethereum network, rather than introduce excessive uncertainty.
+
+**Other Prohibited Elements:** There is no evidence of involvement in activities deemed unethical or immoral under Islamic law.
+
+# Section 3: Shariah Compliance Verdict and Guidance
+
+## Verdict:
+Based on the available information, zkSync as a protocol appears to align with core Shariah principles, primarily due to its focus on enhancing transaction efficiency and security without engaging in prohibited activities. However, a definitive verdict on the Shariah compliance of the anticipated zkSync token cannot be provided until more details about its functionalities and use cases are available.
+
+## Guidance:
+For users interested in zkSync:
+- Monitor developments related to the zkSync token, especially its functionalities and governance roles, to ensure Shariah compliance.
+- Engage with zkSync's ecosystem in a manner that avoids potential Shariah non-compliant activities, such as transactions involving prohibited goods or services.
+
+## Disclaimer:
+This review focuses on the overall Shariah compliance of the zkSync protocol and its potential token based on available information. It does not extend to the Shariah implications of specific products, utilities, or services offered by the protocol unless explicitly analyzed. Users are advised to exercise their own judgment or seek separate guidance for Shariah compliance of specific features or services.

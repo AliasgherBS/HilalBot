@@ -5,8 +5,8 @@ from langchain_openai import ChatOpenAI
 
 class CryptoAssistant:
     def __init__(self):
-        self.openai_key = 'sk-proj-ZmYmPcCY8aEZUIY2kK4cT3BlbkFJ5hAwKhZNHI4s433PmlUB'
-        self.bing_api_key = '8ac0c39f59b044a58a91f6ab90eb21f1'
+        self.openai_key = ''
+        self.bing_api_key = ''
         self.bing_search_url = 'https://api.bing.microsoft.com/v7.0/search'
 
     def bing_search(self, query, count=2):

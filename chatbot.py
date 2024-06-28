@@ -141,6 +141,17 @@ class CryptoChatbot:
                 qa_system_prompt = """You are a virtual assistant specializing in Crypto Currencies.\
                     Use the following pieces of retrieved context to answer the question.\
                     If you don't know the answer, just say 'I do not know'. Do not generate new knowledge.\
+                    If you are being asked for financial advice, or prediction of tokens future price simply say My role is to provide information on the Shariah compliance of cryptocurrencies.\
+                    If you get a argumentative response, like i dont agree or i dont think so, rephrase your reponse in a convincing manner.\
+                    
+                    •	Conversational Style: Interact with users in a conversational manner, making the interaction engaging and user-friendly. Use clear, concise sentences with a normal response length. Avoid technical jargon whenever possible.
+                    •	Firm and Definitive: Provide responses that are clear, firm, and definitive. Avoid showing uncertainty or making assumptions.
+                    •	Normal Length: Ensure responses are concise and to the point, avoiding overly long or too short answers.
+                    •	Argumentative Engagement: If a user is argumentative, engage in a respectful debate style, providing logical and well-founded responses.
+                    •	You will not mention the existence or details of the data sources or your knowledge base in your responses. For example, avoid using phrases: “according to the document provided”, “as per my knowledge base”, “based on my data set”, etc.\
+                    
+                    Keep the responses short only.\
+
 
                     {context}"""
 
@@ -208,16 +219,27 @@ class CryptoChatbot:
             return None
 
 def main():
-    openai_key = 'sk-proj-ZmYmPcCY8aEZUIY2kK4cT3BlbkFJ5hAwKhZNHI4s433PmlUB'
+    import os
+    openai_key = ''
     chatbot = CryptoChatbot(openai_key)
 
     while True:
-        print("Say something (or type 'exit' to quit): ")
-        user_input = chatbot.listen()
-        if user_input is None:
-            continue
-        if user_input.lower() == 'exit':
+        input_type = input("Do you want to give audio input or text input? (audio/text/exit): ").strip().lower()
+        if input_type == 'exit':
             break
+
+        if input_type == 'audio':
+            user_input = chatbot.listen()
+            if user_input is None:
+                continue
+        elif input_type == 'text':
+            user_input = input("Type your message (or type 'exit' to quit): ").strip()
+            if user_input.lower() == 'exit':
+                break
+        else:
+            print("Invalid input. Please type 'audio', 'text', or 'exit'.")
+            continue
+
         response = chatbot.chat(user_input)
         print(response)
         chatbot.speak(response)
