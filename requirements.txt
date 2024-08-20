@@ -4,6 +4,6 @@ langchain_openai
 faiss-cpu
 docx2txt
 requests
-SpeechRecognition
+azure-cognitiveservices-speech
 pyttsx3
 pyaudio

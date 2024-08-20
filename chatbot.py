@@ -245,9 +245,9 @@ if __name__ == "__main__":
 import requests
 
 # Your API key and endpoint
-api_key = "643bfa57eaab4279aec83927339a7cc1"
-endpoint = "https://uaenorth.api.cognitive.microsoft.com/"
-api_version = "2023-04-01"
+api_key = ""
+endpoint = ""
+api_version = ""
 
 # Define the request URL
 url = f"{endpoint}/language/authoring/analyze-conversations/projects/global/languages"
