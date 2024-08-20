@@ -7,7 +7,7 @@ class CryptoAssistant:
     def __init__(self):
         self.openai_key = ''
         self.bing_api_key = ''
-        self.bing_search_url = 'https://api.bing.microsoft.com/v7.0/search'
+        self.bing_search_url = ''
 
     def bing_search(self, query, count=2):
         headers = {"Ocp-Apim-Subscription-Key": self.bing_api_key}
@@ -136,6 +136,12 @@ def main():
 
     documents = assistant.gather_information(urls)
     report = assistant.analyze_documents_and_generate_report(documents)
+    # f = open(f"{token}_report.txt", "a")
+    # f.write(report)
+    # f.close()
+    # Save the report to a text file
+    with open(f"{token}_report.txt", "w") as file:
+        file.write(report)
     print(report)
 
 if __name__ == "__main__":

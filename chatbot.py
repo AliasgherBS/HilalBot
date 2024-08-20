@@ -1,7 +1,7 @@
+import azure.cognitiveservices.speech as speechsdk
 import re
 import os
-import speech_recognition as sr
-import pyttsx3
+import csv
 from langchain_community.document_loaders import Docx2txtLoader
 from langchain.schema import Document
 from langchain_openai import OpenAIEmbeddings
@@ -13,24 +13,23 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables import RunnablePassthrough
 
 class CryptoChatbot:
-    def __init__(self, openai_key, report_db_path="faiss_index_report"):
+    def __init__(self, openai_key, azure_key, azure_region, report_db_path="faiss_index_report"):
         self.openai_key = openai_key
+        self.azure_key = azure_key
+        self.azure_region = azure_region
         self.report_db_path = report_db_path
         self.embeddings = OpenAIEmbeddings(model='text-embedding-3-small', openai_api_key=openai_key)
         self.report_db = self._initialize_report_db()
         self.chat_history = []  # Initialize chat history
 
-        # Initialize text-to-speech engine
-        self.tts_engine = pyttsx3.init()
-        self.tts_engine.setProperty('rate', 150)  # Speed of speech
-        self.tts_engine.setProperty('volume', 0.9)  # Volume level
+        # Initialize Azure Speech SDK
+        self.speech_config = speechsdk.SpeechConfig(subscription=azure_key, region=azure_region)
 
     def _initialize_report_db(self):
         """
         Initialize the FAISS vector store for document embeddings.
         """
         if not os.path.exists(self.report_db_path):
-            # File names to process
             file_names = [
                 'data/24 Tokens Review Reports.docx',
                 'data/45 Tokens Review Reports.docx',
@@ -39,7 +38,6 @@ class CryptoChatbot:
                 'data/Conceptual Data.docx'
             ]
 
-            # Process each file
             all_protocols = []
             for file_name in file_names:
                 protocols, success = self.process_file(file_name)
@@ -48,12 +46,10 @@ class CryptoChatbot:
                 else:
                     print(f"Failed to process {file_name}")
 
-            # Create the FAISS vector store
             report_db = FAISS.from_documents(all_protocols, self.embeddings)
             report_db.save_local(self.report_db_path)
             return report_db
         else:
-            # Load existing vector store
             return FAISS.load_local(self.report_db_path, self.embeddings)
 
     def process_file(self, file_path):
@@ -66,10 +62,8 @@ class CryptoChatbot:
             data_text = data[0].page_content
             protocols = []
 
-            # Splitting with capturing group to include the protocol names
             sections = re.split(r'\n(\d+\.\s*Name of the Protocol:\s*)', data_text)
 
-            # Skip the first empty section, then iterate by 2 to take the protocol name and content
             for i in range(0, len(sections) - 1, 2):
                 content_section = sections[i] + sections[i + 1]
                 metadata_patterns = {
@@ -86,19 +80,15 @@ class CryptoChatbot:
                     'Report Expiry Date': r'Report Expiry Date\s*:?([^\n]*)'
                 }
 
-                # Initialize metadata
                 metadata = {}
                 for key, pattern in metadata_patterns.items():
                     match = re.search(pattern, content_section)
                     if match:
                         metadata[key] = match.group(1).strip() if match.group(1) else "NULL"
-                        # Remove the matched metadata from the content
                         content_section = re.sub(pattern, '', content_section)
 
-                # Further clean up content_section
                 content_section = re.sub(r'\n{2,}', '\n\n', content_section).strip()
 
-                # Create Document object
                 document = Document(page_content=content_section, metadata=metadata)
                 protocols.append(document)
 
@@ -108,16 +98,12 @@ class CryptoChatbot:
             return [], False
 
     def chat(self, user_input):
-        """
-        Handle user input to the chatbot and generate a response.
-        """
         try:
             output_parser = StrOutputParser()
 
             if user_input and self.report_db:
                 retriever = self.report_db.as_retriever()
 
-                # Adding Memory
                 instruction_to_system = """
                 Given the chat history and the latest user question
                 which might reference context in the chat history, formulate a standalone question
@@ -137,7 +123,6 @@ class CryptoChatbot:
 
                 question_chain = question_maker_prompt | llm | output_parser
 
-                # Prompt for the QA system
                 qa_system_prompt = """You are a virtual assistant specializing in Crypto Currencies.\
                     Use the following pieces of retrieved context to answer the question.\
                     If you don't know the answer, just say 'I do not know'. Do not generate new knowledge.\
@@ -193,56 +178,100 @@ class CryptoChatbot:
 
     def speak(self, text):
         """
-        Convert text to speech.
+        Convert text to speech using Azure Speech SDK.
         """
-        self.tts_engine.say(text)
-        self.tts_engine.runAndWait()
+        synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
+        result = synthesizer.speak_text_async(text).get()
+
+        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+            print("Speech synthesized successfully.")
+        elif result.reason == speechsdk.ResultReason.Canceled:
+            print("Speech synthesis canceled: {}".format(result.cancellation_details.reason))
 
     def listen(self):
         """
-        Listen to audio input and convert it to text.
+        Listen to audio input and convert it to text using Azure Speech SDK.
         """
-        recognizer = sr.Recognizer()
-        with sr.Microphone() as source:
-            print("Listening...")
-            audio = recognizer.listen(source)
+        audio_config = speechsdk.AudioConfig(use_default_microphone=True)
+        recognizer = speechsdk.SpeechRecognizer(speech_config=self.speech_config, audio_config=audio_config)
 
-        try:
-            user_input = recognizer.recognize_google(audio)
-            print(f"User said: {user_input}")
-            return user_input
-        except sr.UnknownValueError:
-            print("Google Speech Recognition could not understand audio")
+        print("Listening...")
+        result = recognizer.recognize_once()
+
+        if result.reason == speechsdk.ResultReason.RecognizedSpeech:
+            print(f"Recognized: {result.text}")
+            return result.text
+        elif result.reason == speechsdk.ResultReason.NoMatch:
+            print("No speech could be recognized.")
             return None
-        except sr.RequestError as e:
-            print(f"Could not request results from Google Speech Recognition service; {e}")
+        elif result.reason == speechsdk.ResultReason.Canceled:
+            print("Speech recognition canceled: {}".format(result.cancellation_details.reason))
             return None
 
 def main():
-    import os
     openai_key = ''
-    chatbot = CryptoChatbot(openai_key)
+    azure_key = ""
+    azure_region = ""
+
+    chatbot = CryptoChatbot(openai_key, azure_key, azure_region)
 
     while True:
-        input_type = input("Do you want to give audio input or text input? (audio/text/exit): ").strip().lower()
-        if input_type == 'exit':
-            break
+        input_type = input("Choose input type (text/voice/exit): ").strip().lower()
 
-        if input_type == 'audio':
+        if input_type == "text":
+            user_input = input("You: ")
+            response = chatbot.chat(user_input)
+            print(f"Bot: {response}")
+            chatbot.speak(response)
+        elif input_type == "voice":
             user_input = chatbot.listen()
-            if user_input is None:
-                continue
-        elif input_type == 'text':
-            user_input = input("Type your message (or type 'exit' to quit): ").strip()
-            if user_input.lower() == 'exit':
-                break
+            if user_input:
+                response = chatbot.chat(user_input)
+                print(f"Bot: {response}")
+                chatbot.speak(response)
+        elif input_type == "exit":
+            print("Exiting...")
+            break
         else:
-            print("Invalid input. Please type 'audio', 'text', or 'exit'.")
-            continue
-
-        response = chatbot.chat(user_input)
-        print(response)
-        chatbot.speak(response)
+            print("Invalid input type. Please choose 'text', 'voice', or 'exit'.")
 
 if __name__ == "__main__":
     main()
+
+
+# For recreating error code 401, identifying that it is free tier api and does not support all languages
+# Error: 401 - {"error":{"code":"401","message": "The List supported languages Operation under Microsoft Cognitive Language Service - Analyze Conversations Authoring (2023-04-01) is not supported
+'''
+import requests
+
+# Your API key and endpoint
+api_key = "643bfa57eaab4279aec83927339a7cc1"
+endpoint = "https://uaenorth.api.cognitive.microsoft.com/"
+api_version = "2023-04-01"
+
+# Define the request URL
+url = f"{endpoint}/language/authoring/analyze-conversations/projects/global/languages"
+
+# Set the query parameters
+params = {
+    "projectKind": "Conversation",
+    "api-version": api_version
+}
+
+# Set the headers, including the API key
+headers = {
+    "Ocp-Apim-Subscription-Key": api_key
+}
+
+# Make the GET request
+response = requests.get(url, headers=headers, params=params)
+
+# Check if the request was successful
+if response.status_code == 200:
+    supported_languages = response.json()
+    print("Supported Languages:")
+    for language in supported_languages["value"]:
+        print(f"{language['languageName']} ({language['languageCode']})")
+else:
+    print(f"Error: {response.status_code} - {response.text}")
+'''
