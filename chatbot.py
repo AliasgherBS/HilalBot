@@ -24,6 +24,36 @@ class CryptoChatbot:
 
         # Initialize Azure Speech SDK
         self.speech_config = speechsdk.SpeechConfig(subscription=azure_key, region=azure_region)
+        self.language_locale_map = {
+            'urdu': 'ur-PK',
+            'arabic': 'ar-SA',
+            'turkish': 'tr-TR',
+            'french': 'fr-FR',
+            'spanish': 'es-ES',
+            'english': 'en-US',
+            'chinese': 'zh-CN'
+        }
+        self.selected_language = 'english'  # Default language
+
+    def set_language(self):
+        """
+        Set the language for speech recognition and synthesis.
+        """
+        print("Available languages:")
+        for i, lang in enumerate(self.language_locale_map.keys()):
+            print(f"{i + 1}. {lang}")
+
+        choice = int(input("Choose a language by entering the number: ")) - 1
+        if 0 <= choice < len(self.language_locale_map):
+            self.selected_language = list(self.language_locale_map.keys())[choice]
+            print(f"Language selected: {self.selected_language}")
+        else:
+            print("Invalid choice. Defaulting to English.")
+            self.selected_language = 'english'
+
+        # Update the speech config with the selected language
+        self.speech_config.speech_recognition_language = self.language_locale_map[self.selected_language]
+        self.speech_config.speech_synthesis_language = self.language_locale_map[self.selected_language]
 
     def _initialize_report_db(self):
         """
@@ -216,6 +246,7 @@ def main():
     chatbot = CryptoChatbot(openai_key, azure_key, azure_region)
 
     while True:
+        chatbot.set_language()
         input_type = input("Choose input type (text/voice/exit): ").strip().lower()
 
         if input_type == "text":
@@ -237,41 +268,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# For recreating error code 401, identifying that it is free tier api and does not support all languages
-# Error: 401 - {"error":{"code":"401","message": "The List supported languages Operation under Microsoft Cognitive Language Service - Analyze Conversations Authoring (2023-04-01) is not supported
-'''
-import requests
-
-# Your API key and endpoint
-api_key = ""
-endpoint = ""
-api_version = ""
-
-# Define the request URL
-url = f"{endpoint}/language/authoring/analyze-conversations/projects/global/languages"
-
-# Set the query parameters
-params = {
-    "projectKind": "Conversation",
-    "api-version": api_version
-}
-
-# Set the headers, including the API key
-headers = {
-    "Ocp-Apim-Subscription-Key": api_key
-}
-
-# Make the GET request
-response = requests.get(url, headers=headers, params=params)
-
-# Check if the request was successful
-if response.status_code == 200:
-    supported_languages = response.json()
-    print("Supported Languages:")
-    for language in supported_languages["value"]:
-        print(f"{language['languageName']} ({language['languageCode']})")
-else:
-    print(f"Error: {response.status_code} - {response.text}")
-'''
