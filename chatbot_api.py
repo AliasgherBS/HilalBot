@@ -4,6 +4,8 @@ from pydantic import BaseModel
 import azure.cognitiveservices.speech as speechsdk
 import re
 import os
+import os
+from dotenv import load_dotenv
 import csv
 import uuid
 from langchain_community.document_loaders import Docx2txtLoader
@@ -15,6 +17,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables import RunnablePassthrough
+
+# Load the .env file
+load_dotenv()
 
 app = FastAPI()
 
@@ -280,9 +285,9 @@ class CryptoChatbot:
             return False
 
 crypto_chatbot = CryptoChatbot(
-    openai_key='',
-    azure_key="",
-    azure_region=""
+    openai_key=os.getenv("openai_key"),
+    azure_key=os.getenv("azure_key"),
+    azure_region=os.getenv("azure_region")
 )
 
 class ChatRequest(BaseModel):
